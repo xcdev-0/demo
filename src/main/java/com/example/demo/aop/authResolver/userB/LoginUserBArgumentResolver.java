@@ -1,6 +1,6 @@
 package com.example.demo.aop.authResolver.userB;
 
-import com.example.demo.user.entity.UserB;
+import com.example.demo.user.controller.dto.session.UserBSessionDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.core.MethodParameter;
@@ -15,7 +15,7 @@ public class LoginUserBArgumentResolver implements HandlerMethodArgumentResolver
 
   @Override
   public boolean supportsParameter(MethodParameter parameter) {
-    return parameter.getParameterType().equals(UserB.class);
+    return parameter.getParameterType().equals(UserBSessionDto.class);
   }
 
   @Override

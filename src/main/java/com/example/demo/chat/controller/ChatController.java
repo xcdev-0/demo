@@ -5,9 +5,11 @@ import com.example.demo.aop.authCheck.CheckUserB;
 import com.example.demo.aop.authResolver.userA.LoginUserA;
 import com.example.demo.aop.authResolver.userB.LoginUserB;
 import com.example.demo.chat.controller.dto.CallRequest;
+import com.example.demo.chat.controller.dto.response.AcceptChatRequest;
 import com.example.demo.chat.controller.dto.response.PendingChatListResponse;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.user.controller.dto.session.UserASessionDto;
+import com.example.demo.user.controller.dto.session.UserBSessionDto;
 import com.example.demo.user.entity.UserB;
 import com.example.demo.user.entity.userA.UserA;
 
@@ -32,7 +34,7 @@ public class ChatController {
   @PostMapping("/call")
   public ResponseEntity<?> callNext(
       @RequestBody CallRequest request,
-      @LoginUserB UserB userB) {
+      @LoginUserB UserBSessionDto userB) {
     chatService.handleCall(request.getAId(), userB.getId());
     return ResponseEntity.ok("호출 요청 완료");
   }
@@ -45,5 +47,16 @@ public class ChatController {
     List<PendingChatListResponse> list = chatService.getPendingRequests(userA.getId());
     return ResponseEntity.ok(list);
   }
+
+  @CheckUserA
+  @PostMapping("/accept")
+  public ResponseEntity<?> acceptChat(
+      @LoginUserA UserASessionDto userA,
+      @RequestBody AcceptChatRequest request
+  ) {
+    Long roomId = chatService.acceptChatRequest(userA.getId(), request.getChatRequestId());
+    return ResponseEntity.ok(roomId);
+  }
+
 
 }

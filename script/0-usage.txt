@@ -3,3 +3,4 @@ cd script
 npm init -y
 npm install axios tough-cookie
 npm install axios-cookiejar-support
+npm install @stomp/stompjs websocket

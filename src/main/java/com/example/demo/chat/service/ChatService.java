@@ -3,8 +3,10 @@ package com.example.demo.chat.service;
 
 import com.example.demo.chat.controller.dto.response.PendingChatListResponse;
 import com.example.demo.chat.entity.ChatRequest;
+import com.example.demo.chat.entity.ChatRoom;
 import com.example.demo.chat.entity.RequestStatus;
 import com.example.demo.chat.repository.ChatRequestRepository;
+import com.example.demo.chat.repository.ChatRoomRepository;
 import com.example.demo.user.entity.UserB;
 import com.example.demo.user.entity.UserBProfile;
 import com.example.demo.user.repository.UserBRepository;
@@ -31,6 +33,7 @@ public class ChatService {
   private final UserAService userAService;
   private final UserBService userBService;
   private final UserBRepository userBRepository;
+  private final ChatRoomRepository chatRoomRepository;
   @Transactional
   public void handleCall(Long aId, Long bId) {
     // null 체크 추가
@@ -57,6 +60,30 @@ public class ChatService {
     chatRequestRepository.save(req);
 
     log.info("새 요청 저장 완료");
+  }
+
+  @Transactional
+  public Long acceptChatRequest(Long aId, Long chatRequestId) {
+    ChatRequest request = chatRequestRepository.findById(chatRequestId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 요청"));
+
+    if(request.getAId() != aId) {
+      throw new RuntimeException("권한 없음");
+    }
+
+    if(request.getStatus() != RequestStatus.PENDING) {
+      throw new IllegalStateException("이미 처리된 요청입니다");
+    }
+
+    ChatRoom room = new ChatRoom();
+    room.setAId(request.getAId());
+    room.setBId(request.getBId());
+    chatRoomRepository.save(room);
+
+    request.setStatus(RequestStatus.ACCEPTED);
+    chatRequestRepository.save(request);
+
+    return room.getId();
   }
 
   @Transactional(readOnly = true)

@@ -2,6 +2,7 @@ package com.example.demo.user.controller;
 
 import com.example.demo.user.controller.dto.request.LoginBRequest;
 import com.example.demo.user.controller.dto.request.SignupBRequest;
+import com.example.demo.user.controller.dto.session.UserBSessionDto;
 import com.example.demo.user.entity.UserB;
 import com.example.demo.user.repository.UserBRepository;
 import com.example.demo.user.service.UserBService;
@@ -45,7 +46,8 @@ public class UserBController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호 불일치");
         }
 
-        session.setAttribute("userB", user);  // 세션 저장
+        UserBSessionDto sessionDto = new UserBSessionDto(user.getId(), user.getUserId());
+        session.setAttribute("userB", sessionDto);
         return ResponseEntity.ok("로그인 성공");
     }
 
