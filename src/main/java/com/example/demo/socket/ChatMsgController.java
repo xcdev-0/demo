@@ -38,6 +38,7 @@ public class ChatMsgController {
         .senderUserId(user.getUserId())
         .content(message.getContent())
         .senderType(user.getUserType())
+        .roomId(roomId)
         .createdAt(LocalDateTime.now())
         .build();
       messagesRepository.save(messages);
