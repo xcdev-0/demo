@@ -1,5 +1,6 @@
 package com.example.demo.user.controller;
 
+import com.example.demo.aop.authResolver.userB.LoginUserB;
 import com.example.demo.user.controller.dto.request.LoginBRequest;
 import com.example.demo.user.controller.dto.request.SignupBRequest;
 import com.example.demo.user.controller.dto.session.UserBSessionDto;
@@ -13,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -22,6 +25,20 @@ public class UserBController {
 
     private final UserBService userBService;
     private final UserBRepository userBRepository;
+
+    @GetMapping("/check")
+    public ResponseEntity<?> check(@LoginUserB UserBSessionDto userB) {
+        if (userB == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("userId", userB.getUserId());
+        response.put("id", userB.getId());
+        response.put("loginType", "b");
+        
+        return ResponseEntity.ok(response);    
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupBRequest request) {

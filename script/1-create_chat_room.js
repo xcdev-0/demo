@@ -2,7 +2,7 @@
 const axios = require('axios').default;
 const tough = require('tough-cookie');
 const { wrapper } = require('axios-cookiejar-support');
-const { signupUsers } = require('./1-register.js');
+// const { signupUsers } = require('./1-register.js');
 
 // 클라이언트 생성 함수
 function createClient() {
@@ -13,7 +13,30 @@ function createClient() {
 const clientA = createClient();
 const clientB = createClient();
 
-async function requestChat(clientB) {
+
+async function signupUsers() {
+  try {
+    // 유저 A 회원가입
+    await axios.post('http://localhost:8080/api/user/a/signup', {
+      userId: 'testA',
+      password: '1234',
+      departments: ['one', 'two']
+    });
+    console.log('[A] 회원가입 성공');
+
+    // 유저 B 회원가입
+    await axios.post('http://localhost:8080/api/user/b/signup', {
+      userId: 'testB',
+      password: '1234',
+      information: 'testB information'
+    });
+    console.log('[B] 회원가입 성공');
+  } catch (err) {
+    console.error('회원가입 실패:', err.response?.data || err.message);
+  }
+}
+
+async function requestChat(clientB, clientAId) {
   try {
     await clientB.post('http://localhost:8080/api/user/b/login', {
       userId: 'testB',
@@ -61,6 +84,7 @@ async function handleChatRequests(clientA) {
       chatRequestId: pendingList.data[0].id
     });
     console.log('[A] 채팅 요청 수락 성공: ', acceptChatRequest.data);
+    return acceptChatRequest.data;
   } catch (err) {
     if (err.response) {
       console.error(
@@ -76,7 +100,8 @@ async function main() {
   try {
     await signupUsers();
     await requestChat(clientB);
-    await handleChatRequests(clientA);
+    const roomId = await handleChatRequests(clientA);
+    return roomId;
     // 필요하다면 clientA, clientB로 추가 요청도 가능!
   } catch (err) {
     if (err.response) {
@@ -89,4 +114,8 @@ async function main() {
   }
 }
 
-main();
+module.exports = { main };
+
+if (require.main === module) {
+  main();
+}

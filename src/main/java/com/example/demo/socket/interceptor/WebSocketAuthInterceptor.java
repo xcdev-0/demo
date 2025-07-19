@@ -1,7 +1,7 @@
 package com.example.demo.socket.interceptor;
 
 import com.example.demo.user.controller.dto.session.UserASessionDto;
-import com.example.demo.user.entity.UserB;
+import com.example.demo.user.controller.dto.session.UserBSessionDto;
 import com.example.demo.socket.dto.WebSocketUserDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -28,7 +28,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
         if (request instanceof ServletServerHttpRequest servletRequest) {
             HttpServletRequest httpRequest = servletRequest.getServletRequest();
             HttpSession session = httpRequest.getSession(false);
-
+            log.info("☘️ websocket auth interceptor: " + session);
             if (session != null) {
                 Object userA = session.getAttribute("userA");
                 Object userB = session.getAttribute("userB");
@@ -40,7 +40,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
                     return true;
                 }
 
-                if (userB instanceof UserB b) {
+                if (userB instanceof UserBSessionDto b) {
                     WebSocketUserDto dto = new WebSocketUserDto(b.getId(), b.getUserId(), "B");
                     attributes.put("user", dto);
                     log.info("[WebSocket 인증] B 사용자 인증됨: {}", dto);

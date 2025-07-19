@@ -7,10 +7,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import lombok.Data;
 import lombok.Setter;
 
 @Entity
 @Setter
+@Data
 public class Department {
     @Id @GeneratedValue
     private Long id;

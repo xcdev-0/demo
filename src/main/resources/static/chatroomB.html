@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Room</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #chatBox { border: 1px solid #ccc; height: 400px; overflow-y: auto; padding: 10px; }
+    .message { margin: 5px 0; padding: 5px 10px; border-radius: 10px; max-width: 60%; }
+    .left { background-color: #eee; text-align: left; }
+    .right { background-color: #dcf8c6; text-align: right; margin-left: auto; }
+    #chatInput { width: 70%; }
+  </style>
+</head>
+<body>
+  <h2>채팅방</h2>
+  <div id="chatBox"></div>
+
+  <div>
+    <input id="chatInput" placeholder="메시지 입력" />
+    <button id="sendBtn">보내기</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+  <script>
+    let stompClient = null;
+    let roomId = new URLSearchParams(location.search).get("roomId");
+    let sender = new URLSearchParams(location.search).get("sender"); // A or B
+
+    function connectWebSocket() {
+      const socket = new WebSocket("ws://localhost:8080/ws-chat");
+      stompClient = Stomp.over(socket);
+      stompClient.connect({}, () => {
+        stompClient.subscribe(`/topic/chat/${roomId}`, (msg) => {
+          const chat = JSON.parse(msg.body);
+          const div = document.createElement("div");
+          div.classList.add("message");
+          div.classList.add(chat.sender === sender ? "right" : "left");
+          div.textContent = `${chat.sender}: ${chat.content}`;
+          document.getElementById("chatBox").appendChild(div);
+          document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
+        });
+      });
+    }
+
+    document.getElementById("sendBtn").onclick = () => {
+      const msg = document.getElementById("chatInput").value;
+      if (!msg || !roomId) return;
+      stompClient.send(`/app/chat.send/${roomId}`, {}, JSON.stringify({
+        sender,
+        content: msg,
+        timestamp: new Date()
+      }));
+      document.getElementById("chatInput").value = "";
+    };
+
+    // 자동 로그인 B
+    async function autoLoginB() {
+      try {
+        await fetch("/api/user/b/login", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: "testB", password: "1234" })
+        });
+        console.log("자동 로그인 B 완료");
+      } catch (err) {
+        alert("UserB 로그인 실패! 채팅방 이용 불가 😢");
+        throw err;
+      }
+    }
+
+    // 페이지 진입 시 자동 로그인 후 WebSocket 연결
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        await autoLoginB();
+        connectWebSocket();
+      } catch (e) {
+        // 로그인 실패 시 아무것도 안 함
+      }
+    });
+  </script>
+</body>
+</html>

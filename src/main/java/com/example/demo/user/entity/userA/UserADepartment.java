@@ -8,9 +8,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import lombok.Setter;
+import lombok.Getter;
 
 @Entity
 @Setter
+@Getter
 public class UserADepartment {
 
     @Id @GeneratedValue

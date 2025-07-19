@@ -6,6 +6,7 @@ import com.example.demo.aop.authResolver.userA.LoginUserA;
 import com.example.demo.aop.authResolver.userB.LoginUserB;
 import com.example.demo.chat.controller.dto.CallRequest;
 import com.example.demo.chat.controller.dto.response.AcceptChatRequest;
+import com.example.demo.chat.controller.dto.response.ActiveChatListResponse;
 import com.example.demo.chat.controller.dto.response.PendingChatListResponse;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.user.controller.dto.session.UserASessionDto;
@@ -29,6 +30,21 @@ import jakarta.servlet.http.HttpSession;
 public class ChatController {
 
   private final ChatService chatService;
+
+  @GetMapping("/history")
+  public ResponseEntity<?> getChatHistory(
+      @RequestParam Long roomId,
+      @LoginUserA UserASessionDto userA,
+      @LoginUserB UserBSessionDto userB
+  ) {
+    if (userA != null) {
+      return ResponseEntity.ok(chatService.getChatHistory(roomId, userA.getId()));
+    } else if (userB != null) {
+      return ResponseEntity.ok(chatService.getChatHistory(roomId, userB.getId()));
+    } else {
+      return ResponseEntity.badRequest().body("로그인 필요");
+    }
+  }
   
   @CheckUserB
   @PostMapping("/call")
@@ -42,9 +58,21 @@ public class ChatController {
   @CheckUserA
   @GetMapping("/pending")
   public ResponseEntity<?> getPendingRequests(HttpSession session, @LoginUserA UserASessionDto userA) {
-    log.info("💡"+userA);
-    log.info(session.getAttribute("userA").toString());
     List<PendingChatListResponse> list = chatService.getPendingRequests(userA.getId());
+    return ResponseEntity.ok(list);
+  }
+
+  @CheckUserA
+  @GetMapping("/a/active")
+  public ResponseEntity<?> getActiveRequests(HttpSession session, @LoginUserA UserASessionDto userA) {
+    List<ActiveChatListResponse> list = chatService.getAUserActiveRequests(userA.getId());
+    return ResponseEntity.ok(list);
+  }
+
+  @CheckUserB
+  @GetMapping("/b/active")
+  public ResponseEntity<?> getBUserActiveRequests(HttpSession session, @LoginUserB UserBSessionDto userB) {
+    List<ActiveChatListResponse> list = chatService.getBUserActiveRequests(userB.getId());
     return ResponseEntity.ok(list);
   }
 

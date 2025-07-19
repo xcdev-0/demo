@@ -5,8 +5,6 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class PendingChatListResponse {
-    private Long id;
-    private Long userId;
-    private String information;
+public class ActiveChatListResponse {
+    private Long roomId;
 }

@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.example.demo.chat.entity.ChatRequest;
 import com.example.demo.user.controller.dto.request.SignupARequest;
-
+import com.example.demo.user.controller.dto.response.UserAInfoResponse;
 import com.example.demo.user.repository.userA.DepartmentRepository;
 import com.example.demo.user.repository.userA.UserARepository;
 
@@ -58,5 +58,12 @@ public class UserAService {
 
     public Optional<UserA> findById(Long aId) {
         return userARepository.findById(aId);
+    }
+
+    public List<UserAInfoResponse> searchByDepartment(String keyword) {
+        List<UserA> users = userARepository.findByDepartmentsNameContaining(keyword);
+        return users.stream()
+            .map(user -> new UserAInfoResponse(user.getId(), user.getUserId(), user.getDepartments()))
+            .collect(Collectors.toList());
     }
 }

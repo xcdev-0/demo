@@ -1,12 +1,16 @@
 package com.example.demo.chat.service;
 
 
+import com.example.demo.chat.controller.dto.response.ActiveChatListResponse;
 import com.example.demo.chat.controller.dto.response.PendingChatListResponse;
 import com.example.demo.chat.entity.ChatRequest;
 import com.example.demo.chat.entity.ChatRoom;
+import com.example.demo.chat.entity.Messages;
 import com.example.demo.chat.entity.RequestStatus;
 import com.example.demo.chat.repository.ChatRequestRepository;
 import com.example.demo.chat.repository.ChatRoomRepository;
+import com.example.demo.chat.repository.MessagesRepository;
+import com.example.demo.socket.dto.ChatMessage;
 import com.example.demo.user.entity.UserB;
 import com.example.demo.user.entity.UserBProfile;
 import com.example.demo.user.repository.UserBRepository;
@@ -34,6 +38,7 @@ public class ChatService {
   private final UserBService userBService;
   private final UserBRepository userBRepository;
   private final ChatRoomRepository chatRoomRepository;
+  private final MessagesRepository messagesRepository;
   @Transactional
   public void handleCall(Long aId, Long bId) {
     // null 체크 추가
@@ -119,4 +124,25 @@ public class ChatService {
         .collect(Collectors.toList());
   }
 
+  public List<ActiveChatListResponse> getAUserActiveRequests(Long aId) {
+    List<ChatRoom> rooms = chatRoomRepository.findByAId(aId);
+    return rooms.stream()
+        .map(room -> new ActiveChatListResponse(room.getId()))
+        .collect(Collectors.toList());
+  }
+
+  public List<ActiveChatListResponse> getBUserActiveRequests(Long bId) {
+    List<ChatRoom> rooms = chatRoomRepository.findByBId(bId);
+    return rooms.stream()
+        .map(room -> new ActiveChatListResponse(room.getId()))
+        .collect(Collectors.toList());
+  }
+
+  public List<ChatMessage> getChatHistory(Long roomId, Long id) {
+    List<Messages> messages = messagesRepository.findByRoomIdOrderByCreatedAtAsc(roomId);
+    List<ChatMessage> chatMessages = messages.stream()
+        .map(message -> new ChatMessage(message.getSenderUserId(), message.getContent(), message.getSenderType(), message.getCreatedAt()))
+        .collect(Collectors.toList());
+    return chatMessages;
+  }
 }

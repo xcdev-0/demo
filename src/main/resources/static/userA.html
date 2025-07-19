@@ -1,0 +1,40 @@
+<!-- userA.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>User A</title>
+</head>
+<body>
+  <h2>User A (자동 로그인)</h2>
+  <button id="fetchActiveBtn">활성 채팅방 보기</button>
+  <ul id="activeList"></ul>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      await fetch("/api/user/a/login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: "testA", password: "1234" })
+      });
+      console.log("자동 로그인 A 완료");
+    });
+
+    document.getElementById("fetchActiveBtn").onclick = async () => {
+      const res = await fetch("/api/chat/a/active", { credentials: "include" });
+      const list = await res.json();
+      const ul = document.getElementById("activeList");
+      ul.innerHTML = "";
+      list.forEach(room => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.innerText = `입장 (Room ${room.roomId})`;
+        btn.onclick = () => window.location.href = `/chatroomA.html?roomId=${room.roomId}`;
+        li.appendChild(btn);
+        ul.appendChild(li);
+      });
+    };
+  </script>
+</body>
+</html>
